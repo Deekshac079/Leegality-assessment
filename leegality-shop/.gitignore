@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Dev artifacts
+dev-output.txt
+screenshot.mjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

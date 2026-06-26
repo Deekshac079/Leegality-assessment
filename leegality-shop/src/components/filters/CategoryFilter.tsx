@@ -7,13 +7,23 @@ interface CategoryFilterProps {
 }
 
 export default function CategoryFilter({ categories, loading }: CategoryFilterProps) {
-  const { filters, setCategory } = useFilters();
+  const { filters, toggleCategory, clearCategories } = useFilters();
 
   return (
     <section aria-labelledby="category-heading">
-      <h3 id="category-heading" className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-        Categories
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 id="category-heading" className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+          Categories
+        </h3>
+        {filters.categories.length > 0 && (
+          <button
+            onClick={clearCategories}
+            className="text-xs text-blue-600 hover:underline font-medium"
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
       {loading ? (
         <div className="space-y-2">
@@ -23,39 +33,38 @@ export default function CategoryFilter({ categories, loading }: CategoryFilterPr
         </div>
       ) : (
         <ul className="space-y-1.5" role="list">
-          <li>
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="radio"
-                name="category"
-                value=""
-                checked={filters.category === ''}
-                onChange={() => setCategory('')}
-                className="accent-blue-600"
-              />
-              <span className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors capitalize">
-                All Categories
-              </span>
-            </label>
-          </li>
-          {categories.map((cat) => (
-            <li key={cat.slug}>
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  type="radio"
-                  name="category"
-                  value={cat.slug}
-                  checked={filters.category === cat.slug}
-                  onChange={() => setCategory(cat.slug)}
-                  className="accent-blue-600"
-                />
-                <span className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors capitalize">
-                  {cat.name}
-                </span>
-              </label>
-            </li>
-          ))}
+          {categories.map((cat) => {
+            const checked = filters.categories.includes(cat.slug);
+            return (
+              <li key={cat.slug}>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    value={cat.slug}
+                    checked={checked}
+                    onChange={() => toggleCategory(cat.slug)}
+                    className="accent-blue-600 w-4 h-4 rounded"
+                  />
+                  <span
+                    className={`text-sm capitalize transition-colors ${
+                      checked
+                        ? 'text-blue-600 font-medium'
+                        : 'text-gray-700 group-hover:text-blue-600'
+                    }`}
+                  >
+                    {cat.name}
+                  </span>
+                </label>
+              </li>
+            );
+          })}
         </ul>
+      )}
+
+      {filters.categories.length > 0 && (
+        <p className="mt-2 text-xs text-gray-400">
+          {filters.categories.length} selected
+        </p>
       )}
     </section>
   );

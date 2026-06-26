@@ -41,7 +41,7 @@ export interface PriceRange {
 }
 
 export interface FilterState {
-  category: string;
+  categories: string[];
   priceRange: PriceRange;
   brands: string[];
   page: number;

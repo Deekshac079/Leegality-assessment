@@ -6,7 +6,8 @@ interface FilterContextValue {
   filters: FilterState;
   sidebarOpen: boolean;
   toggleSidebar: () => void;
-  setCategory: (category: string) => void;
+  toggleCategory: (category: string) => void;
+  clearCategories: () => void;
   setPriceRange: (range: PriceRange) => void;
   toggleBrand: (brand: string) => void;
   setPage: (page: number) => void;
@@ -22,7 +23,7 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
   const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
 
   const filters: FilterState = {
-    category: searchParams.get('category') ?? '',
+    categories: searchParams.get('categories') ? searchParams.get('categories')!.split(',') : [],
     priceRange: {
       min: searchParams.get('minPrice') ?? '',
       max: searchParams.get('maxPrice') ?? '',
@@ -52,12 +53,20 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
     [setSearchParams]
   );
 
-  const setCategory = useCallback(
+  const toggleCategory = useCallback(
     (category: string) => {
-      updateParams({ category, page: null });
+      const current = filters.categories;
+      const next = current.includes(category)
+        ? current.filter((c) => c !== category)
+        : [...current, category];
+      updateParams({ categories: next.length ? next.join(',') : null, page: null });
     },
-    [updateParams]
+    [filters.categories, updateParams]
   );
+
+  const clearCategories = useCallback(() => {
+    updateParams({ categories: null, page: null });
+  }, [updateParams]);
 
   const setPriceRange = useCallback(
     (range: PriceRange) => {
@@ -101,7 +110,18 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <FilterContext.Provider
-      value={{ filters, sidebarOpen, toggleSidebar, setCategory, setPriceRange, toggleBrand, setPage, setSearch, clearAllFilters }}
+      value={{
+        filters,
+        sidebarOpen,
+        toggleSidebar,
+        toggleCategory,
+        clearCategories,
+        setPriceRange,
+        toggleBrand,
+        setPage,
+        setSearch,
+        clearAllFilters,
+      }}
     >
       {children}
     </FilterContext.Provider>

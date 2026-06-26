@@ -36,7 +36,7 @@ export default function ProductListingPage() {
   const pages = totalPages(totalItems, PAGE_SIZE);
 
   const hasActiveFilters =
-    filters.category !== '' ||
+    filters.categories.length > 0 ||
     filters.priceRange.min !== '' ||
     filters.priceRange.max !== '' ||
     filters.brands.length > 0 ||

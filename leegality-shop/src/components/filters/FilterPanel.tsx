@@ -22,7 +22,7 @@ export default function FilterPanel({
   const { filters, clearAllFilters } = useFilters();
 
   const activeCount =
-    (filters.category ? 1 : 0) +
+    filters.categories.length +
     (filters.priceRange.min || filters.priceRange.max ? 1 : 0) +
     filters.brands.length;
 

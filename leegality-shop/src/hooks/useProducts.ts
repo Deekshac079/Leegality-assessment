@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { fetchProducts, fetchProductsByCategory, searchProducts } from '../api/products';
+import { fetchProducts, searchProducts } from '../api/products';
 import { applyClientFilters, extractUniqueBrands } from '../utils/filters';
 import type { Product, FilterState } from '../types';
 
@@ -27,21 +27,14 @@ export function useProducts(filters: FilterState): UseProductsResult {
 
     const load = async () => {
       try {
-        let data;
-        if (filters.search.trim()) {
-          data = await searchProducts(filters.search.trim());
-        } else if (filters.category) {
-          data = await fetchProductsByCategory(filters.category);
-        } else {
-          data = await fetchProducts(200, 0);
-        }
-        if (!cancelled) {
-          setRawProducts(data.products);
-        }
+        const data = filters.search.trim()
+          ? await searchProducts(filters.search.trim())
+          : await fetchProducts(200, 0);
+
+        if (!cancelled) setRawProducts(data.products);
       } catch (err: unknown) {
-        if (!cancelled) {
+        if (!cancelled)
           setError(err instanceof Error ? err.message : 'Failed to load products');
-        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -49,13 +42,21 @@ export function useProducts(filters: FilterState): UseProductsResult {
 
     load();
     return () => { cancelled = true; };
-  }, [filters.category, filters.search, retryCount]);
+  }, [filters.search, retryCount]);
 
-  const allBrands = useMemo(() => extractUniqueBrands(rawProducts), [rawProducts]);
+  // Client-side category filter — supports multi-select
+  const categoryFiltered = useMemo(() => {
+    if (filters.categories.length === 0) return rawProducts;
+    return rawProducts.filter((p) => filters.categories.includes(p.category));
+  }, [rawProducts, filters.categories]);
 
+  // Brands shown = only those present in the category-filtered set
+  const allBrands = useMemo(() => extractUniqueBrands(categoryFiltered), [categoryFiltered]);
+
+  // Apply price + brand filters on top of category-filtered list
   const filteredProducts = useMemo(
-    () => applyClientFilters(rawProducts, filters),
-    [rawProducts, filters]
+    () => applyClientFilters(categoryFiltered, filters),
+    [categoryFiltered, filters]
   );
 
   const pagedProducts = useMemo(() => {
