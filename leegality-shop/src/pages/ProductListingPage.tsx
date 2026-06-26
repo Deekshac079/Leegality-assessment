@@ -23,7 +23,11 @@ export default function ProductListingPage() {
   useEffect(() => {
     const el = mainRef.current;
     if (!el) return;
-    const update = () => setStickyTop(`calc(100vh - ${el.offsetHeight}px)`);
+    const update = () => {
+      const rawTop = window.innerHeight - el.offsetHeight;
+      // Positive rawTop would push items DOWN — cap at 0 so short lists stay at natural position
+      setStickyTop(rawTop < 0 ? `${rawTop}px` : '0px');
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
